@@ -1,0 +1,1237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>FOSSAN Election 2026</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet"/>
+<script type="module">
+import{initializeApp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import{getFirestore,doc,setDoc,getDoc,collection,getDocs,deleteDoc,updateDoc,serverTimestamp}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import{getStorage,ref,uploadString,getDownloadURL}from"https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+const app=initializeApp({apiKey:"AIzaSyCaRvUuvW9TyNUV7YLd0EXa8J0PS28V1BY",authDomain:"fossan-election-2026.firebaseapp.com",projectId:"fossan-election-2026",storageBucket:"fossan-election-2026.firebasestorage.app",messagingSenderId:"709609989065",appId:"1:709609989065:web:7dd69dc5e9909da69a3e18"});
+window.$db=getFirestore(app);window.$st=getStorage(app);
+window.$fs={doc,setDoc,getDoc,collection,getDocs,deleteDoc,updateDoc,serverTimestamp};
+window.$sr={ref,uploadString,getDownloadURL};
+window.addEventListener('DOMContentLoaded',()=>App.boot());
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+:root{--r:#e11d48;--r2:#f43f5e;--g:#FFD600;--g2:#f59e0b;--bg:#0a0508;--card:#160b0e;--card2:#1e0f13;--border:rgba(255,255,255,.08);--muted:#9a7a80;--text:#f0e0e5;}
+html,body{height:100%;overflow-x:hidden;}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);}
+body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background:radial-gradient(ellipse 80% 60% at 0% 0%,rgba(225,29,72,.1),transparent),radial-gradient(ellipse 60% 40% at 100% 100%,rgba(255,214,0,.07),transparent);}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,255,255,.012) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.012) 1px,transparent 1px);background-size:50px 50px;}
+
+/* APP */
+.app{position:relative;z-index:1;min-height:100vh;padding-bottom:72px;}
+.page{display:none;padding:14px;max-width:600px;margin:0 auto;}
+.page.on{display:block;animation:fu .3s ease;}
+@keyframes fu{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+/* BOTTOM NAV */
+.bnav{position:fixed;bottom:0;left:0;right:0;z-index:9999;background:rgba(10,5,8,.97);border-top:1px solid var(--border);display:flex;padding:6px 8px;gap:4px;backdrop-filter:blur(16px);}
+.bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:8px 4px;border-radius:12px;border:none;cursor:pointer;background:transparent;color:var(--muted);font-family:'Nunito',sans-serif;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.5px;transition:all .15s;touch-action:manipulation;}
+.bnav-btn .ico{font-size:22px;line-height:1;}
+.bnav-btn.act{color:var(--g);background:rgba(255,214,0,.08);}
+.bnav-btn:active{transform:scale(.94);}
+
+/* CARDS */
+.card{background:linear-gradient(160deg,var(--card),var(--card2));border:1px solid var(--border);border-radius:20px;padding:22px 18px;margin-bottom:12px;}
+
+/* HEADER */
+.hdr{text-align:center;padding:20px 14px 16px;}
+.hdr-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(225,29,72,.1);border:1px solid rgba(225,29,72,.25);color:var(--r2);font-size:10px;font-weight:900;letter-spacing:3px;text-transform:uppercase;padding:5px 14px;border-radius:100px;margin-bottom:14px;}
+.hdr h1{font-family:'Bebas Neue',sans-serif;font-size:clamp(64px,17vw,108px);line-height:.82;letter-spacing:3px;background:linear-gradient(160deg,#fff 0%,var(--g) 45%,var(--r2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px;}
+.hdr h2{font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,4vw,26px);color:rgba(255,255,255,.3);letter-spacing:5px;margin-bottom:10px;}
+.hdr p{color:var(--muted);font-size:13px;font-weight:700;line-height:1.7;}
+.flag{display:flex;height:4px;border-radius:100px;overflow:hidden;margin:14px 0;}
+.flag span{flex:1;}.flag span:nth-child(1){background:var(--r);}.flag span:nth-child(2){background:#fff;}.flag span:nth-child(3){background:var(--r);}
+
+/* VOTE BANNER */
+.vbanner{background:linear-gradient(135deg,rgba(225,29,72,.15),rgba(255,214,0,.1));border:1.5px solid rgba(225,29,72,.3);border-radius:16px;padding:18px;text-align:center;margin-bottom:14px;}
+.vbanner h3{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--r2);margin-bottom:6px;}
+.cd-row{display:flex;justify-content:center;gap:8px;margin:10px 0;}
+.cd-unit{background:rgba(0,0,0,.4);border-radius:10px;padding:10px 12px;min-width:54px;text-align:center;}
+.cd-num{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--g);line-height:1;}
+.cd-lbl{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--muted);}
+
+/* INFO */
+.info-note{background:rgba(255,214,0,.06);border:1px solid rgba(255,214,0,.15);border-radius:12px;padding:14px 16px;margin-bottom:14px;font-size:13px;font-weight:700;color:var(--muted);line-height:1.8;}
+.info-note strong{color:var(--g);}
+
+/* FORMS */
+.ftitle{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:1px;margin-bottom:6px;}
+.fsub{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:18px;line-height:1.6;}
+.field{margin-bottom:13px;}
+.field label{display:block;font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:6px;}
+.field input,.field select{width:100%;background:rgba(255,255,255,.05);border:1.5px solid rgba(255,255,255,.08);border-radius:11px;padding:12px 14px;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;outline:none;transition:border-color .2s;}
+.field input:focus,.field select:focus{border-color:var(--g);}
+.field input::placeholder{color:#3a2a2e;}
+.field select option{background:#160b0e;}
+
+/* BUTTONS */
+.btn{width:100%;padding:14px;border-radius:12px;font-family:'Nunito',sans-serif;font-size:15px;font-weight:900;cursor:pointer;border:none;transition:all .15s;text-transform:uppercase;letter-spacing:1px;margin-top:8px;touch-action:manipulation;}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn:not(:disabled):active{transform:scale(.97);}
+.btn-red{background:linear-gradient(135deg,var(--r),var(--r2));color:#fff;box-shadow:0 6px 20px rgba(225,29,72,.3);}
+.btn-gold{background:linear-gradient(135deg,var(--g),var(--g2));color:#000;box-shadow:0 6px 20px rgba(255,214,0,.25);}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--muted);}
+.btn-sm{padding:9px 16px;font-size:12px;border-radius:9px;width:auto;margin-top:0;}
+.err{color:#f87171;font-size:13px;font-weight:800;display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:10px 14px;margin-top:8px;}
+.ok{color:#4ade80;font-size:13px;font-weight:800;display:none;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 14px;margin-top:8px;}
+
+/* PHOTO UPLOAD */
+.photo-zone{border:2px dashed rgba(255,255,255,.1);border-radius:14px;padding:18px;text-align:center;margin-bottom:14px;}
+.photo-pre{width:100%;max-width:200px;aspect-ratio:2/3;object-fit:cover;object-position:top;border-radius:10px;margin:0 auto 12px;display:none;}
+.photo-hint{font-size:36px;margin-bottom:8px;}
+.photo-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.ppick{display:inline-flex;align-items:center;gap:5px;cursor:pointer;background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--text);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;padding:9px 14px;border-radius:100px;text-transform:uppercase;letter-spacing:1px;touch-action:manipulation;}
+.ppick:active{background:rgba(255,214,0,.12);border-color:rgba(255,214,0,.3);color:var(--g);}
+
+/* FULL-SCREEN VOTING */
+.vscreen{display:none;position:fixed;inset:0;bottom:72px;background:var(--bg);z-index:500;flex-direction:column;overflow:hidden;}
+.vscreen.on{display:flex;}
+.vprog{height:3px;background:rgba(255,255,255,.08);flex-shrink:0;}
+.vprog-fill{height:100%;background:linear-gradient(90deg,var(--r),var(--g));transition:width .4s;}
+.vhead{background:rgba(10,5,8,.97);padding:12px 16px 10px;border-bottom:1px solid var(--border);flex-shrink:0;}
+.vhead-num{font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:3px;color:var(--muted);margin-bottom:2px;}
+.vhead-pos{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;color:var(--g);line-height:1;}
+.vhead-tip{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;}
+.vbody{flex:1;overflow-y:auto;padding:10px;}
+.vcands-2{display:grid;grid-template-columns:1fr 1fr;gap:8px;height:100%;}
+.vcands-3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;height:100%;}
+.vcands-1{display:flex;justify-content:center;align-items:center;height:100%;}
+.vcand{background:rgba(255,255,255,.04);border:2.5px solid rgba(255,255,255,.07);border-radius:14px;overflow:hidden;cursor:pointer;transition:all .2s;position:relative;display:flex;flex-direction:column;touch-action:manipulation;}
+.vcand:active{transform:scale(.97);}
+.vcand.sel{border-color:var(--r);box-shadow:0 0 0 3px rgba(225,29,72,.2);}
+.vcand.sel::after{content:'✓';position:absolute;top:7px;right:7px;background:var(--r);color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;z-index:5;}
+.vcand-full{height:100%;display:flex;flex-direction:column;}
+.vcand img{width:100%;object-fit:cover;object-position:top center;display:block;flex:1;}
+.vcand-img-2{width:100%;flex:1;object-fit:cover;object-position:top center;display:block;}
+.vcand-img-3{width:100%;flex:1;object-fit:cover;object-position:top center;display:block;}
+.vcand-img-1{max-height:calc(100% - 50px);aspect-ratio:2/3;}
+.vcand-no-photo{flex:1;background:linear-gradient(180deg,#2a1015,#160b0e);display:flex;align-items:center;justify-content:center;font-size:40px;}
+.vcand-info{padding:9px 10px;flex-shrink:0;}
+.vcand-name{font-size:11px;font-weight:900;line-height:1.3;color:var(--text);text-align:center;}
+.vcand-auto{font-size:10px;color:#4ade80;font-weight:900;text-align:center;margin-top:3px;}
+.vcand-1-wrap{max-width:220px;width:100%;}
+.vnav{background:rgba(10,5,8,.97);border-top:1px solid var(--border);padding:10px 14px;display:flex;justify-content:space-between;align-items:center;gap:8px;flex-shrink:0;}
+.vnav-back{background:rgba(255,255,255,.07);border:1px solid var(--border);color:var(--muted);font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;padding:11px 14px;border-radius:11px;cursor:pointer;white-space:nowrap;touch-action:manipulation;}
+.vnav-back:active{background:rgba(255,255,255,.12);}
+.vnav-count{font-size:11px;font-weight:900;color:var(--muted);white-space:nowrap;}
+.vnav-next{flex:1;background:linear-gradient(135deg,var(--r),var(--r2));color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:900;padding:12px 16px;border-radius:11px;cursor:pointer;border:none;text-align:center;transition:all .15s;touch-action:manipulation;}
+.vnav-next:disabled{opacity:.35;cursor:not-allowed;}
+.vnav-next:not(:disabled):active{transform:scale(.97);}
+
+/* SUCCESS */
+.suc-wrap{text-align:center;padding:30px 16px;}
+.suc-icon{width:90px;height:90px;background:linear-gradient(135deg,var(--r),var(--r2));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:42px;margin:0 auto 16px;animation:glow 2s infinite;}
+@keyframes glow{0%,100%{box-shadow:0 0 30px rgba(225,29,72,.4);}50%{box-shadow:0 0 60px rgba(225,29,72,.7);}}
+.suc-wrap h2{font-family:'Bebas Neue',sans-serif;font-size:48px;background:linear-gradient(135deg,#fff,var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:10px;}
+.conf-box{background:rgba(255,214,0,.08);border:2px solid rgba(255,214,0,.25);border-radius:14px;padding:16px;margin:16px auto;max-width:260px;}
+.conf-box span{display:block;font-size:9px;font-weight:900;letter-spacing:3px;color:var(--g);text-transform:uppercase;margin-bottom:6px;}
+.conf-box strong{font-size:18px;font-weight:900;letter-spacing:3px;}
+
+/* BLOCKED */
+.blk{text-align:center;padding:40px 16px;}
+.blk .ico{font-size:64px;margin-bottom:14px;}
+.blk h2{font-family:'Bebas Neue',sans-serif;font-size:40px;margin-bottom:10px;}
+
+/* ADMIN */
+.admin-title{font-family:'Bebas Neue',sans-serif;font-size:30px;color:var(--g);}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+.stat{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center;}
+.stat .n{font-family:'Bebas Neue',sans-serif;font-size:36px;line-height:1;}
+.stat .l{font-size:9px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--muted);margin-top:3px;}
+.n-red{color:var(--r2);}
+.n-gold{color:var(--g);}
+.n-green{color:#4ade80;}
+.n-blue{color:#60a5fa;}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px;}
+.tab{background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);font-family:'Nunito',sans-serif;font-size:11px;font-weight:900;padding:8px 12px;border-radius:100px;cursor:pointer;text-transform:uppercase;letter-spacing:1px;touch-action:manipulation;}
+.tab.act{background:rgba(255,214,0,.12);border-color:rgba(255,214,0,.3);color:var(--g);}
+.tab:active{transform:scale(.96);}
+.tabcontent{display:none;}.tabcontent.on{display:block;animation:fu .3s ease;}
+.live-dot{display:inline-flex;align-items:center;gap:6px;background:rgba(225,29,72,.12);border:1px solid rgba(225,29,72,.3);color:var(--r2);font-size:11px;font-weight:900;padding:5px 12px;border-radius:100px;letter-spacing:1px;margin-bottom:12px;}
+.live-dot::before{content:'';width:7px;height:7px;background:var(--r2);border-radius:50%;animation:lp 1.2s infinite;}
+@keyframes lp{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* RESULTS */
+.rpos{margin-bottom:20px;}
+.rpos-title{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--g);margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;}
+.rcands{display:flex;flex-direction:column;gap:8px;}
+.rcand{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:12px;padding:12px;}
+.rcand.win{border-color:rgba(255,214,0,.4);background:rgba(255,214,0,.05);}
+.rcand-top{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.rcand-photo{width:44px;height:58px;object-fit:cover;border-radius:7px;background:rgba(255,255,255,.05);flex-shrink:0;cursor:pointer;}
+.rcand-info{flex:1;}
+.rcand-name{font-size:13px;font-weight:900;margin-bottom:2px;}
+.rcand-votes{font-size:20px;font-weight:900;color:var(--r2);font-family:'Bebas Neue',sans-serif;}
+.rcand-lvl{display:flex;gap:8px;margin-top:4px;font-size:11px;font-weight:900;}
+.lv200{color:var(--g);}
+.lv300{color:#60a5fa;}
+.rbar{height:5px;background:rgba(255,255,255,.08);border-radius:100px;overflow:hidden;}
+.rbar-fill{height:100%;background:linear-gradient(90deg,var(--r),var(--g));border-radius:100px;transition:width .6s ease;}
+.print-btn{background:rgba(225,29,72,.12);border:1px solid rgba(225,29,72,.25);color:var(--r2);font-size:11px;font-weight:900;padding:5px 12px;border-radius:100px;cursor:pointer;touch-action:manipulation;}
+
+/* TABLE */
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);}
+table{width:100%;border-collapse:collapse;font-size:12px;}
+th{text-align:left;padding:10px 12px;color:var(--muted);font-size:9px;text-transform:uppercase;letter-spacing:1.5px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02);}
+td{padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.04);font-weight:700;}
+tr:last-child td{border-bottom:none;}
+.bdg{display:inline-flex;font-size:10px;font-weight:900;padding:2px 9px;border-radius:100px;}
+.b200{background:rgba(255,214,0,.12);color:var(--g);}
+.b300{background:rgba(96,165,250,.12);color:#60a5fa;}
+.del-btn{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);color:#f87171;padding:4px 10px;border-radius:7px;font-size:10px;font-weight:900;cursor:pointer;touch-action:manipulation;}
+
+/* CAND MGMT */
+.cmgmt{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:12px;padding:12px;display:flex;gap:10px;align-items:center;margin-bottom:8px;}
+.cmgmt-photo{width:44px;height:58px;object-fit:cover;border-radius:7px;background:rgba(255,255,255,.05);flex-shrink:0;cursor:pointer;}
+.cmgmt-info{flex:1;}
+.cmgmt-name{font-size:13px;font-weight:900;margin-bottom:2px;}
+.cmgmt-pos{font-size:11px;color:var(--g);font-weight:700;}
+
+/* TRACKING */
+.track-row{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:10px 14px;margin-bottom:6px;font-size:12px;}
+.track-name{font-weight:900;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+
+/* LIGHTBOX */
+.lb{position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:99999;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px;}
+.lb.on{display:flex;}
+.lb img{max-width:88vw;max-height:72vh;object-fit:contain;border-radius:12px;}
+.lb-name{font-family:'Bebas Neue',sans-serif;font-size:26px;color:#fff;letter-spacing:2px;}
+.lb-pos{font-size:13px;color:var(--g);font-weight:700;}
+.lb-close{position:absolute;top:16px;right:16px;font-size:26px;cursor:pointer;color:#fff;background:rgba(255,255,255,.1);border:none;border-radius:50%;width:42px;height:42px;display:flex;align-items:center;justify-content:center;touch-action:manipulation;}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:9998;display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;}
+.overlay.on{display:flex;}
+.spin{width:46px;height:46px;border:4px solid rgba(255,255,255,.08);border-top-color:var(--r);border-radius:50%;animation:rot .7s linear infinite;}
+@keyframes rot{to{transform:rotate(360deg);}}
+.overlay p{font-weight:800;color:var(--muted);font-size:13px;}
+
+/* NOTIFICATION BELL */
+.notif-badge{position:absolute;top:4px;right:8px;background:var(--r);color:#fff;font-size:9px;font-weight:900;width:16px;height:16px;border-radius:50%;display:none;align-items:center;justify-content:center;}
+.notif-badge.on{display:flex;}
+
+/* SEARCH */
+.srch{position:relative;margin-bottom:12px;}
+.srch input{width:100%;background:rgba(255,255,255,.05);border:1.5px solid var(--border);border-radius:11px;padding:11px 14px 11px 38px;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;outline:none;}
+.srch input:focus{border-color:var(--g);}
+.srch-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);}
+
+/* TOOLBAR */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.tbtn{padding:9px 14px;border-radius:9px;font-family:'Nunito',sans-serif;font-size:12px;font-weight:900;cursor:pointer;border:none;text-transform:uppercase;letter-spacing:1px;transition:all .15s;touch-action:manipulation;}
+.tbtn-purple{background:linear-gradient(135deg,#7c3aed,#a855f7);color:#fff;}
+.tbtn-red{background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);color:#f87171;}
+.tbtn-gold{background:rgba(255,214,0,.12);border:1px solid rgba(255,214,0,.25);color:var(--g);}
+.tbtn:active{transform:scale(.96);}
+
+/* TRACKING LOCK */
+.track-lock{text-align:center;padding:30px 16px;}
+.track-lock .ico{font-size:52px;margin-bottom:12px;}
+.track-lock h3{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--g);margin-bottom:8px;}
+
+@media(max-width:380px){.stats{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+<!-- LIGHTBOX -->
+<div class="lb" id="lb" onclick="LB.close()">
+  <button class="lb-close" onclick="LB.close()">✕</button>
+  <img id="lb-img" src="" alt=""/>
+  <div class="lb-name" id="lb-name"></div>
+  <div class="lb-pos" id="lb-pos"></div>
+</div>
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="spin"></div>
+  <p id="overlay-txt">Please wait...</p>
+</div>
+
+<div class="app">
+
+<!-- ══════════════════ HOME PAGE ══════════════════ -->
+<div class="page on" id="pg-home">
+  <div class="hdr">
+    <div class="hdr-pill">🗳️ Official Election Portal</div>
+    <h1>FOSSAN</h1>
+    <h2>ELECTION 2026</h2>
+    <p>Forensic Science Students Association of Nigeria<br/>Secure Digital Voting System</p>
+  </div>
+  <div class="flag"><span></span><span></span><span></span></div>
+  <div id="home-status"></div>
+  <div class="card">
+    <p style="font-size:13px;color:var(--muted);font-weight:700;line-height:1.9;text-align:center;">
+      🔒 This election uses <strong style="color:var(--g)">3-factor verification</strong><br/>
+      Only registered Forensic Science students can vote.<br/>
+      Each student can only vote <strong style="color:var(--r2)">once</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- ══════════════════ CANDIDATE PORTAL ══════════════════ -->
+<div class="page" id="pg-cand">
+  <div class="card">
+    <div class="ftitle">📸 Candidate Submission</div>
+    <div class="fsub">Aspirants — submit your name, position and portrait photo below.</div>
+    <div class="info-note">⚠️ Your <strong>FULL NAME must be in CAPITAL LETTERS</strong>. Only one submission per position per person.</div>
+    <div class="field">
+      <label>👤 Full Name (CAPITALS)</label>
+      <input type="text" id="c-name" placeholder="E.G. JOHN CHUKWUEMEKA OKAFOR" oninput="this.value=this.value.toUpperCase()"/>
+    </div>
+    <div class="field">
+      <label>🎓 Registration Number</label>
+      <input type="text" id="c-reg" placeholder="e.g. 2023884001"/>
+    </div>
+    <div class="field">
+      <label>🏆 Position Contesting For</label>
+      <select id="c-pos">
+        <option value="">-- Select Position --</option>
+        <option>Assistant Director of Socials</option>
+        <option>Assistant Director of Sports</option>
+        <option>Assistant Public Relations Officer</option>
+        <option>Assistant Secretary General</option>
+        <option>Director of Socials</option>
+        <option>Director of Sports</option>
+        <option>Director of Academics</option>
+        <option>Editor-in-Chief</option>
+        <option>Public Relations Officer</option>
+        <option>Treasurer</option>
+        <option>Financial Secretary</option>
+        <option>Secretary General</option>
+        <option>Vice President</option>
+        <option>President</option>
+      </select>
+    </div>
+    <div class="field"><label>📷 Portrait Photo</label></div>
+    <div class="photo-zone">
+      <img class="photo-pre" id="c-preview" alt="Preview"/>
+      <div id="c-photo-hint"><div class="photo-hint">📷</div><p style="font-size:13px;color:var(--muted);font-weight:700;">Upload your portrait photo</p><p style="font-size:11px;color:#3a2a2e;margin-top:4px;">Half-body, face clearly visible</p></div>
+      <div class="photo-btns">
+        <label class="ppick">📁 Gallery<input type="file" accept="image/*" style="display:none" onchange="Cand.photo(this)"/></label>
+        <label class="ppick">📸 Camera<input type="file" accept="image/*" capture="user" style="display:none" onchange="Cand.photo(this)"/></label>
+      </div>
+    </div>
+    <div class="err" id="c-err"></div>
+    <div class="ok" id="c-ok"></div>
+    <button class="btn btn-red" onclick="Cand.submit()">Submit Candidacy →</button>
+  </div>
+</div>
+
+<!-- ══════════════════ VOTER LOGIN ══════════════════ -->
+<div class="page" id="pg-login">
+  <div class="card">
+    <div class="ftitle">🗳️ Voter Login</div>
+    <div class="fsub">Enter the exact details you used during registration.</div>
+    <div class="info-note">Use your <strong>exact registered details</strong> — same spelling and capital/small letters.</div>
+    <div class="field"><label>👤 Full Name</label><input type="text" id="v-name" placeholder="Enter your full name as registered"/></div>
+    <div class="field"><label>📧 Email Address</label><input type="email" id="v-email" placeholder="Enter your registered email"/></div>
+    <div class="field"><label>🎓 Registration Number</label><input type="text" id="v-reg" placeholder="e.g. 2023884001"/></div>
+    <div class="err" id="v-err"></div>
+    <button class="btn btn-red" onclick="Voter.verify()">Verify & Vote →</button>
+  </div>
+</div>
+
+<!-- ══════════════════ VOTE REVIEW & SUBMIT ══════════════════ -->
+<div class="page" id="pg-review">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div>
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--muted);">Voting as</div>
+        <div style="font-size:15px;font-weight:900;" id="rv-name"></div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--muted);">Level</div>
+        <div style="font-size:15px;font-weight:900;color:var(--g);" id="rv-level"></div>
+      </div>
+    </div>
+    <div id="rv-summary" style="margin-bottom:14px;"></div>
+    <div class="err" id="rv-err"></div>
+    <button class="btn btn-red" onclick="Voter.submit()">✅ Submit All Votes</button>
+    <button class="btn btn-ghost" onclick="Voter.backToVoting()">← Go Back & Edit</button>
+  </div>
+</div>
+
+<!-- ══════════════════ ALREADY VOTED ══════════════════ -->
+<div class="page" id="pg-voted">
+  <div class="card"><div class="blk">
+    <div class="ico">✅</div>
+    <h2 style="color:#4ade80;">Already Voted!</h2>
+    <p style="color:var(--muted);font-size:14px;font-weight:700;line-height:1.8;">You have already cast your vote.<br/>Each student can only vote once.<br/><br/><strong style="color:var(--g)">Thank you for participating!</strong></p>
+  </div></div>
+</div>
+
+<!-- ══════════════════ VOTE SUCCESS ══════════════════ -->
+<div class="page" id="pg-success">
+  <div class="card"><div class="suc-wrap">
+    <div class="suc-icon">✓</div>
+    <h2>Vote Cast!</h2>
+    <p style="color:var(--muted);font-size:14px;font-weight:700;line-height:1.8;">Your vote has been recorded.<br/>Thank you for participating!</p>
+    <div class="conf-box"><span>Confirmation Code</span><strong id="conf-code"></strong></div>
+    <p style="font-size:12px;color:#3a2a2e;margin-top:8px;line-height:1.8;">📸 Screenshot as proof of voting.</p>
+  </div></div>
+</div>
+
+<!-- ══════════════════ ADMIN LOGIN ══════════════════ -->
+<div class="page" id="pg-admin-login">
+  <div class="card" style="margin-top:30px;">
+    <div style="text-align:center;margin-bottom:20px;">
+      <div style="font-size:46px;margin-bottom:10px;">🔐</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--g);">Admin Access</div>
+      <p style="color:var(--muted);font-size:13px;font-weight:700;">Electoral Committee Only</p>
+    </div>
+    <div class="field"><label>Password</label><input type="password" id="adm-pw" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')Admin.login()"/></div>
+    <div class="err" id="adm-err">⚠ Incorrect password!</div>
+    <button class="btn btn-gold" onclick="Admin.login()">Enter Dashboard →</button>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN DASHBOARD ══════════════════ -->
+<div class="page" id="pg-admin">
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:8px;">
+      <div class="admin-title">📊 Dashboard</div>
+      <div style="display:flex;gap:6px;">
+        <button class="tbtn tbtn-gold" onclick="Admin.load()">↻</button>
+        <button class="tbtn tbtn-red" onclick="showPage('pg-home')">✕</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats" id="adm-stats">
+      <div class="stat"><div class="n n-red" id="st-reg">—</div><div class="l">Registered</div></div>
+      <div class="stat"><div class="n n-gold" id="st-voted">—</div><div class="l">Voted</div></div>
+      <div class="stat"><div class="n n-green" id="st-rem">—</div><div class="l">Remaining</div></div>
+      <div class="stat"><div class="n n-blue" id="st-turn">—</div><div class="l">Turnout</div></div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab act" onclick="Admin.tab('t-results',this)">📊 Results</button>
+      <button class="tab" onclick="Admin.tab('t-voters',this)">👥 Voters</button>
+      <button class="tab" onclick="Admin.tab('t-cands',this)">📸 Candidates</button>
+      <button class="tab" onclick="Admin.tab('t-track',this)" title="Who Voted Who">🔒</button>
+    </div>
+
+    <!-- RESULTS TAB -->
+    <div class="tabcontent on" id="t-results">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:12px;">
+        <div class="live-dot">🔴 LIVE</div>
+        <div style="display:flex;gap:8px;">
+          <button class="tbtn tbtn-purple" onclick="Admin.exportPDF()">📄 PDF</button>
+          <button class="tbtn tbtn-gold" onclick="window.print()">🖨️ Print</button>
+        </div>
+      </div>
+      <p style="font-size:11px;color:var(--muted);font-weight:700;margin-bottom:12px;">Tap any photo to view full size. Auto-refreshes every 30s.</p>
+      <div id="results-content"><div style="text-align:center;padding:20px;color:var(--muted);">Loading...</div></div>
+    </div>
+
+    <!-- VOTERS TAB -->
+    <div class="tabcontent" id="t-voters">
+      <div class="toolbar">
+        <button class="tbtn tbtn-purple" onclick="Admin.exportCSV()">📥 Export CSV</button>
+      </div>
+      <div class="srch"><span class="srch-ico">🔍</span><input type="text" placeholder="Search voters..." oninput="Admin.filterVoters(this.value)"/></div>
+      <div class="tbl-wrap">
+        <table><thead><tr><th>#</th><th>Name</th><th>Reg No</th><th>Email</th><th>Level</th><th>Status</th></tr></thead>
+        <tbody id="voters-tbody"></tbody></table>
+      </div>
+    </div>
+
+    <!-- CANDIDATES TAB -->
+    <div class="tabcontent" id="t-cands">
+      <div class="toolbar">
+        <button class="tbtn tbtn-red" onclick="Admin.clearAllCands()">🗑️ Clear All</button>
+      </div>
+      <div id="cands-mgmt"><div style="text-align:center;padding:20px;color:var(--muted);">Loading...</div></div>
+    </div>
+
+    <!-- WHO VOTED WHO TAB -->
+    <div class="tabcontent" id="t-track">
+      <div id="track-lock-screen">
+        <div class="track-lock">
+          <div class="ico">🔐</div>
+          <h3>Super Admin Only</h3>
+          <p style="color:var(--muted);font-size:13px;font-weight:700;margin-bottom:18px;line-height:1.7;">Enter Super Admin password to view who voted for who.</p>
+          <div class="field" style="max-width:280px;margin:0 auto 10px;">
+            <input type="password" id="super-pw" placeholder="Super Admin password" onkeydown="if(event.key==='Enter')Admin.unlockTrack()"/>
+          </div>
+          <div class="err" id="super-err" style="max-width:280px;margin:0 auto;">⚠ Incorrect password!</div>
+          <button class="btn btn-gold" style="max-width:280px;margin:8px auto 0;" onclick="Admin.unlockTrack()">Unlock →</button>
+        </div>
+      </div>
+      <div id="track-content" style="display:none;">
+        <div class="toolbar">
+          <button class="tbtn tbtn-red" onclick="Admin.clearVotes()">🗑️ Clear All Votes</button>
+          <button class="tbtn tbtn-gold" onclick="Admin.lockTrack()">🔒 Lock</button>
+        </div>
+        <div class="srch"><span class="srch-ico">🔍</span><input type="text" placeholder="Search by name..." oninput="Admin.filterTrack(this.value)"/></div>
+        <div id="track-list"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /app -->
+
+<!-- FULL SCREEN VOTING POSITIONS (injected by JS) -->
+
+<!-- BOTTOM NAV -->
+<nav class="bnav">
+  <button class="bnav-btn act" id="bn-home" onclick="Nav.go('home')">
+    <span class="ico">🏠</span>Home
+  </button>
+  <button class="bnav-btn" id="bn-cand" onclick="Nav.go('cand')">
+    <span class="ico">📸</span>Candidates
+  </button>
+  <button class="bnav-btn" id="bn-vote" onclick="Nav.go('vote')" id="bn-vote">
+    <span class="ico">🗳️</span>Vote
+  </button>
+  <button class="bnav-btn" id="bn-admin" onclick="Nav.go('admin')" style="position:relative;">
+    <span class="ico">🔒</span>Admin
+    <span class="notif-badge" id="notif-badge">!</span>
+  </button>
+</nav>
+
+<script>
+// ══════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════
+const ADMIN_PW = 'FOSSANECRESULT12#';
+const TEST_OPEN  = new Date('2026-04-08T18:00:00').getTime();
+const TEST_CLOSE = new Date('2026-04-08T19:00:00').getTime();
+const ELEC_OPEN  = new Date('2026-04-11T09:45:00').getTime();
+const ELEC_CLOSE = new Date('2026-04-11T12:00:00').getTime();
+const POSITIONS = [
+  'Assistant Director of Socials','Assistant Director of Sports',
+  'Assistant Public Relations Officer','Assistant Secretary General',
+  'Director of Socials','Director of Sports','Director of Academics',
+  'Editor-in-Chief','Public Relations Officer','Treasurer',
+  'Financial Secretary','Secretary General','Vice President','President'
+];
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let currentVoter = null;
+let voteSelections = {};
+let allVoters = [];
+let allCandidates = [];
+let allVotes = [];
+let resultsMap = {};
+let photoB64 = null;
+let liveTimer = null;
+let newVoteCount = 0;
+let adminLoaded = false;
+
+// ══════════════════════════════════════════
+// UTILS
+// ══════════════════════════════════════════
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  window.scrollTo(0,0);
+}
+function loading(txt='Please wait...') {
+  document.getElementById('overlay-txt').textContent = txt;
+  document.getElementById('overlay').classList.add('on');
+}
+function done() { document.getElementById('overlay').classList.remove('on'); }
+function showErr(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function hideErr(id) { document.getElementById(id).style.display = 'none'; }
+function showOk(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+// ══════════════════════════════════════════
+// APP BOOT
+// ══════════════════════════════════════════
+window.App = {
+  boot() {
+    this.checkElection();
+    setInterval(() => this.checkElection(), 30000);
+  },
+  checkElection() {
+    const now = Date.now();
+    const statusEl = document.getElementById('home-status');
+    const inTest = now >= TEST_OPEN && now < TEST_CLOSE;
+    const inReal = now >= ELEC_OPEN && now < ELEC_CLOSE;
+
+    if (inTest || inReal) {
+      const label = inTest ? '🟡 TEST RUN' : '🟢 LIVE ELECTION';
+      const closeTime = inTest ? TEST_CLOSE : ELEC_CLOSE;
+      statusEl.innerHTML = `
+        <div class="vbanner">
+          <h3>${label} — POLLS OPEN!</h3>
+          <div class="cd-row">
+            <div class="cd-unit"><div class="cd-num" id="oc-h">00</div><div class="cd-lbl">Hrs</div></div>
+            <div class="cd-unit"><div class="cd-num" id="oc-m">00</div><div class="cd-lbl">Mins</div></div>
+            <div class="cd-unit"><div class="cd-num" id="oc-s">00</div><div class="cd-lbl">Secs</div></div>
+          </div>
+          <p style="font-size:12px;color:var(--muted);font-weight:700;margin-bottom:14px;">until polls close</p>
+        </div>`;
+      this._tick(closeTime);
+      document.getElementById('bn-vote').style.display = 'flex';
+    } else {
+      statusEl.innerHTML = '';
+      document.getElementById('bn-vote').style.display = 'flex';
+    }
+  },
+  _tick(target) {
+    const tick = () => {
+      const d = target - Date.now();
+      if (d <= 0) { this.checkElection(); return; }
+      const pad = n => String(Math.floor(n)).padStart(2,'0');
+      const h = document.getElementById('oc-h');
+      const m = document.getElementById('oc-m');
+      const s = document.getElementById('oc-s');
+      if (h) h.textContent = pad(d/3600000);
+      if (m) m.textContent = pad((d%3600000)/60000);
+      if (s) s.textContent = pad((d%60000)/1000);
+    };
+    tick();
+    setInterval(tick, 1000);
+  }
+};
+
+// ══════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════
+window.Nav = {
+  go(dest) {
+    document.querySelectorAll('.bnav-btn').forEach(b => b.classList.remove('act'));
+    document.getElementById('bn-'+dest)?.classList.add('act');
+    if (dest === 'home') showPage('pg-home');
+    else if (dest === 'cand') showPage('pg-cand');
+    else if (dest === 'vote') {
+      const now = Date.now();
+      const inTest = now >= TEST_OPEN && now < TEST_CLOSE;
+      const inReal = now >= ELEC_OPEN && now < ELEC_CLOSE;
+      if (inTest || inReal) showPage('pg-login');
+      else { alert('Voting is not currently open.'); document.getElementById('bn-home').classList.add('act'); }
+    }
+    else if (dest === 'admin') {
+      newVoteCount = 0;
+      document.getElementById('notif-badge').classList.remove('on');
+      if (adminLoaded) showPage('pg-admin');
+      else showPage('pg-admin-login');
+    }
+  }
+};
+
+// ══════════════════════════════════════════
+// LIGHTBOX
+// ══════════════════════════════════════════
+window.LB = {
+  open(url, name, pos) {
+    document.getElementById('lb-img').src = url;
+    document.getElementById('lb-name').textContent = name;
+    document.getElementById('lb-pos').textContent = pos;
+    document.getElementById('lb').classList.add('on');
+  },
+  close() { document.getElementById('lb').classList.remove('on'); }
+};
+
+// ══════════════════════════════════════════
+// CANDIDATE PORTAL
+// ══════════════════════════════════════════
+window.Cand = {
+  photo(input) {
+    if (!input.files[0]) return;
+    const r = new FileReader();
+    r.onload = e => {
+      photoB64 = e.target.result;
+      const pre = document.getElementById('c-preview');
+      pre.src = photoB64;
+      pre.style.display = 'block';
+      document.getElementById('c-photo-hint').style.display = 'none';
+    };
+    r.readAsDataURL(input.files[0]);
+  },
+  async submit() {
+    const name = document.getElementById('c-name').value.trim().toUpperCase();
+    const reg  = document.getElementById('c-reg').value.trim();
+    const pos  = document.getElementById('c-pos').value;
+    hideErr('c-err'); document.getElementById('c-ok').style.display = 'none';
+    if (!name || !reg || !pos) { showErr('c-err','⚠ Please fill all fields!'); return; }
+    if (!photoB64) { showErr('c-err','⚠ Please upload your photo!'); return; }
+    loading('Submitting candidacy...');
+    try {
+      const db = window.$db;
+      const {doc, setDoc, getDoc, serverTimestamp} = window.$fs;
+      const id = reg.replace(/\//g,'-') + '_' + pos.replace(/\s/g,'_');
+      const exists = await getDoc(doc(db,'candidates',id));
+      if (exists.exists()) { done(); showErr('c-err','⚠ Already submitted for this position!'); return; }
+      // Compress photo aggressively - must be under 500KB for Firestore
+      const compressed = await compressPhoto(photoB64, 800, 0.78);
+      await setDoc(doc(db,'candidates',id), {name, regNumber:reg, position:pos, photoURL:compressed, submittedAt:serverTimestamp()});
+      done();
+      showOk('c-ok','✅ Candidacy submitted successfully!');
+      document.getElementById('c-name').value = '';
+      document.getElementById('c-reg').value = '';
+      document.getElementById('c-pos').value = '';
+      photoB64 = null;
+      document.getElementById('c-preview').style.display = 'none';
+      document.getElementById('c-photo-hint').style.display = 'block';
+    } catch(e) { done(); showErr('c-err','⚠ Error submitting. Check internet!'); console.error(e); }
+  }
+};
+
+// Compress photo before saving - keeps it small and fast
+function compressPhoto(base64, maxWidth, quality) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      // Scale down
+      if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      let result = canvas.toDataURL('image/jpeg', quality);
+      // Keep under 800KB for fast submission under 10 seconds
+      if (result.length > 800000) {
+        result = canvas.toDataURL('image/jpeg', 0.65);
+      }
+      if (result.length > 800000) {
+        canvas.width = 600; canvas.height = Math.round(h * 600 / w);
+        canvas.getContext('2d').drawImage(img, 0, 0, 600, Math.round(h * 600 / w));
+        result = canvas.toDataURL('image/jpeg', 0.65);
+      }
+      resolve(result);
+    };
+    img.onerror = () => resolve(base64);
+    img.src = base64;
+  });
+}
+
+// ══════════════════════════════════════════
+// VOTER
+// ══════════════════════════════════════════
+window.Voter = {
+  async verify() {
+    const now = Date.now();
+    const inTest = now >= TEST_OPEN && now < TEST_CLOSE;
+    const inReal = now >= ELEC_OPEN && now < ELEC_CLOSE;
+    hideErr('v-err');
+    if (!inTest && !inReal) { showErr('v-err','⚠ Voting is not currently open!'); return; }
+    const name  = document.getElementById('v-name').value.trim();
+    const email = document.getElementById('v-email').value.trim().toLowerCase();
+    const reg   = document.getElementById('v-reg').value.trim();
+    if (!name || !email || !reg) { showErr('v-err','⚠ Please fill all 3 fields!'); return; }
+    loading('Verifying your details...');
+    try {
+      const {doc, getDoc} = window.$fs;
+      const safeReg = reg.replace(/\//g,'-').replace(/\s/g,'_');
+      const snap = await getDoc(doc(window.$db,'registeredVoters',safeReg));
+      if (!snap.exists()) { done(); showErr('v-err','⚠ Registration number not found. You must register first!'); return; }
+      const voter = snap.data();
+      if (voter.name !== name || voter.email !== email) { done(); showErr('v-err','⚠ Details do not match. Check spelling and capital/small letters!'); return; }
+      if (voter.voted) { done(); showPage('pg-voted'); return; }
+      currentVoter = {...voter, id:safeReg};
+      await this.loadVoting();
+    } catch(e) { done(); showErr('v-err','⚠ Error verifying. Check internet!'); console.error(e); }
+  },
+
+  async loadVoting() {
+    loading('Loading candidates...');
+    try {
+      const {collection, getDocs} = window.$fs;
+      const snap = await getDocs(collection(window.$db,'candidates'));
+      allCandidates = [];
+      snap.forEach(d => allCandidates.push({id:d.id,...d.data()}));
+      voteSelections = {};
+      document.querySelectorAll('.vscreen').forEach(el => el.remove());
+      POSITIONS.forEach((pos, idx) => this.buildPositionScreen(pos, idx));
+      done();
+      showPage('pg-login');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+      this.goToPosition(0);
+    } catch(e) { done(); alert('Error loading candidates!'); console.error(e); }
+  },
+
+  buildPositionScreen(pos, idx) {
+    const posCands = allCandidates.filter(c => c.position === pos);
+    const isLast = idx === POSITIONS.length - 1;
+    const pct = Math.round(((idx+1)/POSITIONS.length)*100);
+    const div = document.createElement('div');
+    div.className = 'vscreen';
+    div.id = `vs-${idx}`;
+
+    let bodyHTML = '';
+    if (posCands.length === 0) {
+      voteSelections[pos] = '__none__';
+      bodyHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;"><div style="font-size:40px;">🚫</div><p style="color:var(--muted);font-weight:700;font-size:14px;text-align:center;">No candidates for this position</p></div>`;
+    } else if (posCands.length === 1) {
+      voteSelections[pos] = posCands[0].id;
+      const c = posCands[0];
+      bodyHTML = `<div class="vcands-1"><div class="vcand sel vcand-1-wrap">
+        ${c.photoURL ? `<img src="${c.photoURL}" class="vcand-img-1" style="display:block;margin:0 auto;max-height:calc(100vh - 280px);" alt="${c.name}"/>` : `<div class="vcand-no-photo" style="height:280px;">👤</div>`}
+        <div class="vcand-info"><div class="vcand-name">${c.name}</div><div class="vcand-auto">✅ Auto Selected</div></div>
+      </div></div>`;
+    } else if (posCands.length === 2) {
+      bodyHTML = `<div class="vcands-2">${posCands.map(c => `
+        <div class="vcand vcand-full" id="vc-${c.id}" onclick="Voter.pick('${pos}',${idx},'${c.id}')">
+          ${c.photoURL ? `<img src="${c.photoURL}" class="vcand-img-2" alt="${c.name}"/>` : `<div class="vcand-no-photo">👤</div>`}
+          <div class="vcand-info"><div class="vcand-name">${c.name}</div></div>
+        </div>`).join('')}</div>`;
+    } else {
+      bodyHTML = `<div class="vcands-3">${posCands.map((c,ci) => {
+        const isOdd = posCands.length%2!==0 && ci===posCands.length-1;
+        return `<div class="vcand vcand-full${isOdd?' span-all':''}" id="vc-${c.id}" onclick="Voter.pick('${pos}',${idx},'${c.id}')" style="${isOdd?'grid-column:span 3;max-width:180px;margin:0 auto;':''}" >
+          ${c.photoURL ? `<img src="${c.photoURL}" class="vcand-img-3" alt="${c.name}"/>` : `<div class="vcand-no-photo" style="flex:1;">👤</div>`}
+          <div class="vcand-info"><div class="vcand-name">${c.name}</div></div>
+        </div>`;}).join('')}</div>`;
+    }
+
+    div.innerHTML = `
+      <div class="vprog"><div class="vprog-fill" style="width:${pct}%"></div></div>
+      <div class="vhead">
+        <div class="vhead-num">Position ${idx+1} of ${POSITIONS.length}</div>
+        <div class="vhead-pos">${pos.toUpperCase()}</div>
+        <div class="vhead-tip">${posCands.length===0?'⚠️ No candidates yet':posCands.length===1?'🔵 Uncontested — Auto selected':'👆 Tap to select one candidate'}</div>
+      </div>
+      <div class="vbody">${bodyHTML}</div>
+      <div class="vnav">
+        ${idx>0?`<button class="vnav-back" onclick="Voter.goToPosition(${idx-1})">← Back</button>`:'<div></div>'}
+        <div class="vnav-count">${idx+1} / ${POSITIONS.length}</div>
+        <button class="vnav-next" id="vn-${idx}" onclick="${isLast?'Voter.reviewVotes()':'Voter.goToPosition('+( idx+1)+')'}"
+          ${(posCands.length===0||posCands.length===1)?'':'disabled'}>
+          ${isLast?'✅ Review →':'Next →'}
+        </button>
+      </div>`;
+    document.body.insertBefore(div, document.querySelector('.bnav'));
+  },
+
+  goToPosition(idx) {
+    document.querySelectorAll('.vscreen').forEach(s => s.classList.remove('on'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('on'));
+    const el = document.getElementById(`vs-${idx}`);
+    if (el) el.classList.add('on');
+    window.scrollTo(0,0);
+  },
+
+  pick(pos, idx, candId) {
+    const posCands = allCandidates.filter(c => c.position===pos);
+    posCands.forEach(c => { const el=document.getElementById(`vc-${c.id}`); if(el) el.classList.remove('sel'); });
+    const el = document.getElementById(`vc-${candId}`);
+    if (el) el.classList.add('sel');
+    voteSelections[pos] = candId;
+    const btn = document.getElementById(`vn-${idx}`);
+    if (btn) btn.disabled = false;
+  },
+
+  reviewVotes() {
+    const missing = POSITIONS.filter(pos => {
+      const cands = allCandidates.filter(c=>c.position===pos);
+      if (cands.length===0) return false;
+      return !voteSelections[pos] || voteSelections[pos]==='';
+    });
+    if (missing.length>0) {
+      alert(`Please select a candidate for: ${missing[0]}`);
+      const idx = POSITIONS.indexOf(missing[0]);
+      this.goToPosition(idx); return;
+    }
+    document.querySelectorAll('.vscreen').forEach(s => s.classList.remove('on'));
+    document.getElementById('rv-name').textContent = currentVoter.name;
+    document.getElementById('rv-level').textContent = currentVoter.level||'N/A';
+    let html = '';
+    POSITIONS.forEach(pos => {
+      if (!voteSelections[pos] || voteSelections[pos]==='__none__') return;
+      const cand = allCandidates.find(c=>c.id===voteSelections[pos]);
+      if (!cand) return;
+      html += `<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:12px;">
+        <span style="color:var(--muted);font-weight:700;">${pos}</span>
+        <span style="font-weight:900;color:var(--g);">${cand.name}</span>
+      </div>`;
+    });
+    document.getElementById('rv-summary').innerHTML = html;
+    hideErr('rv-err');
+    showPage('pg-review');
+  },
+
+  backToVoting() {
+    showPage('pg-home');
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+    this.goToPosition(POSITIONS.length-1);
+  },
+
+  async submit() {
+    hideErr('rv-err');
+    loading('Submitting your votes...');
+    try {
+      const {doc, setDoc, updateDoc, getDoc, serverTimestamp} = window.$fs;
+      const db = window.$db;
+      const check = await getDoc(doc(db,'registeredVoters',currentVoter.id));
+      if (check.data()?.voted) { done(); showPage('pg-voted'); return; }
+      const code = 'VOTE-'+Math.random().toString(36).substring(2,5).toUpperCase()+'-'+Date.now().toString().slice(-4);
+      await setDoc(doc(db,'votes',currentVoter.id), {
+        voterName:currentVoter.name, voterReg:currentVoter.regNumber,
+        voterLevel:currentVoter.level, voterEmail:currentVoter.email,
+        selections:voteSelections, confirmationCode:code, votedAt:serverTimestamp()
+      });
+      for (const [pos, candId] of Object.entries(voteSelections)) {
+        if (candId==='__none__') continue;
+        const rId = pos.replace(/\s/g,'_');
+        const rRef = doc(db,'results',rId);
+        const rSnap = await getDoc(rRef);
+        const lvKey = currentVoter.level==='200L'?'votes200L':'votes300L';
+        if (rSnap.exists()) {
+          const d = rSnap.data();
+          const cd = d[candId]||{total:0,votes200L:0,votes300L:0};
+          cd.total=(cd.total||0)+1; cd[lvKey]=(cd[lvKey]||0)+1;
+          await updateDoc(rRef, {[candId]:cd});
+        } else {
+          await setDoc(rRef, {[candId]:{total:1,[lvKey]:1}});
+        }
+      }
+      await updateDoc(doc(db,'registeredVoters',currentVoter.id), {voted:true, votedAt:serverTimestamp(), confirmationCode:code});
+      done();
+      document.getElementById('conf-code').textContent = code;
+      document.querySelectorAll('.vscreen').forEach(s=>s.remove());
+      showPage('pg-success');
+      currentVoter=null; voteSelections={};
+      // Notify admin
+      newVoteCount++;
+      document.getElementById('notif-badge').classList.add('on');
+    } catch(e) { done(); showErr('rv-err','⚠ Error submitting. Check internet!'); console.error(e); }
+  }
+};
+
+// ══════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════
+window.Admin = {
+  login() {
+    const pw = document.getElementById('adm-pw').value;
+    if (pw !== ADMIN_PW) { document.getElementById('adm-err').style.display='block'; return; }
+    document.getElementById('adm-err').style.display='none';
+    document.getElementById('adm-pw').value='';
+    adminLoaded = true;
+    showPage('pg-admin');
+    this.load();
+    this.startLive();
+  },
+
+  async load() {
+    loading('Loading dashboard...');
+    try {
+      const {collection, getDocs} = window.$fs;
+      const db = window.$db;
+      const [vSnap, cSnap, vtSnap, rSnap] = await Promise.all([
+        getDocs(collection(db,'registeredVoters')),
+        getDocs(collection(db,'candidates')),
+        getDocs(collection(db,'votes')),
+        getDocs(collection(db,'results'))
+      ]);
+      allVoters=[]; vSnap.forEach(d=>allVoters.push({id:d.id,...d.data()}));
+      allCandidates=[]; cSnap.forEach(d=>allCandidates.push({id:d.id,...d.data()}));
+      allVotes=[]; vtSnap.forEach(d=>allVotes.push({id:d.id,...d.data()}));
+      resultsMap={}; rSnap.forEach(d=>resultsMap[d.id]=d.data());
+      const voted = allVoters.filter(v=>v.voted).length;
+      const total = allVoters.length;
+      const rem = total - voted;
+      const turn = total>0?Math.round((voted/total)*100):0;
+      document.getElementById('st-reg').textContent = total;
+      document.getElementById('st-voted').textContent = voted;
+      document.getElementById('st-rem').textContent = rem;
+      document.getElementById('st-turn').textContent = turn+'%';
+      this.renderResults();
+      this.renderVoters(allVoters);
+      this.renderCands(allCandidates);
+      this.renderTrack(allVotes);
+      done();
+    } catch(e) { done(); console.error(e); }
+  },
+
+  startLive() {
+    if (liveTimer) clearInterval(liveTimer);
+    liveTimer = setInterval(async () => {
+      const activeTab = document.querySelector('.tabcontent.on');
+      if (!activeTab || activeTab.id !== 't-results') return;
+      try {
+        const {collection, getDocs} = window.$fs;
+        const [vSnap, rSnap] = await Promise.all([
+          getDocs(collection(window.$db,'registeredVoters')),
+          getDocs(collection(window.$db,'results'))
+        ]);
+        allVoters=[]; vSnap.forEach(d=>allVoters.push({id:d.id,...d.data()}));
+        resultsMap={}; rSnap.forEach(d=>resultsMap[d.id]=d.data());
+        const voted = allVoters.filter(v=>v.voted).length;
+        const total = allVoters.length;
+        document.getElementById('st-voted').textContent = voted;
+        document.getElementById('st-rem').textContent = total-voted;
+        document.getElementById('st-turn').textContent = total>0?Math.round((voted/total)*100)+'%':'0%';
+        this.renderResults();
+      } catch(e) {}
+    }, 30000);
+  },
+
+  tab(tabId, btn) {
+    document.querySelectorAll('.tabcontent').forEach(t=>t.classList.remove('on'));
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('act'));
+    document.getElementById(tabId).classList.add('on');
+    btn.classList.add('act');
+  },
+
+  renderResults() {
+    const container = document.getElementById('results-content');
+    let html = '';
+    POSITIONS.forEach(pos => {
+      const key = pos.replace(/\s/g,'_');
+      const posRes = resultsMap[key]||{};
+      const posCands = allCandidates.filter(c=>c.position===pos);
+      if (!posCands.length) return;
+      const sorted = [...posCands].map(c => {
+        const d = posRes[c.id]||{total:0,votes200L:0,votes300L:0};
+        return {...c, total:d.total||0, v200:d.votes200L||0, v300:d.votes300L||0};
+      }).sort((a,b)=>b.total-a.total);
+      const max = sorted[0]?.total||1;
+      html += `<div class="rpos print-pos">
+        <div class="rpos-title">${pos.toUpperCase()}
+          <button class="print-btn" onclick="Admin.printPos('${pos}')">🖨️ Print</button>
+        </div>
+        <div class="rcands">`;
+      sorted.forEach((c,i) => {
+        const pct = max>0?(c.total/max)*100:0;
+        const isWin = i===0&&c.total>0;
+        const photoHTML = c.photoURL
+          ? `<img class="rcand-photo" src="${c.photoURL}" alt="${c.name}" onclick="LB.open('${c.photoURL}','${c.name}','${pos}')" title="View full size"/>`
+          : `<div class="rcand-photo" style="display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>`;
+        html += `<div class="rcand${isWin?' win':''}">
+          <div class="rcand-top">
+            ${photoHTML}
+            <div class="rcand-info">
+              <div class="rcand-name">${isWin?'👑 ':''}${c.name}</div>
+              <div class="rcand-votes">${c.total} vote${c.total!==1?'s':''}</div>
+              <div class="rcand-lvl"><span class="lv200">200L: ${c.v200}</span><span class="lv300">300L: ${c.v300}</span></div>
+            </div>
+          </div>
+          <div class="rbar"><div class="rbar-fill" style="width:${pct}%"></div></div>
+        </div>`;
+      });
+      html += `</div></div>`;
+    });
+    container.innerHTML = html || '<p style="text-align:center;color:var(--muted);padding:20px;">No votes yet.</p>';
+  },
+
+  renderVoters(list) {
+    const tb = document.getElementById('voters-tbody');
+    if (!list.length) { tb.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:16px;">No voters found.</td></tr>'; return; }
+    tb.innerHTML = list.map((v,i)=>`<tr>
+      <td style="color:var(--muted);">${i+1}</td>
+      <td style="font-weight:800;">${v.name||'—'}</td>
+      <td style="color:var(--g);font-size:11px;">${v.regNumber||'—'}</td>
+      <td style="color:var(--muted);font-size:11px;">${v.email||'—'}</td>
+      <td><span class="bdg ${v.level==='200L'?'b200':'b300'}">${v.level||'—'}</span></td>
+      <td>${v.voted?'<span style="color:#4ade80;font-weight:900;">✅ Voted</span>':'<span style="color:var(--muted);">Pending</span>'}</td>
+    </tr>`).join('');
+  },
+
+  filterVoters(q) {
+    const filtered = allVoters.filter(v=>(v.name||'').toLowerCase().includes(q.toLowerCase())||(v.regNumber||'').toLowerCase().includes(q.toLowerCase()));
+    this.renderVoters(filtered);
+  },
+
+  renderCands(list) {
+    const c = document.getElementById('cands-mgmt');
+    if (!list.length) { c.innerHTML='<p style="text-align:center;color:var(--muted);padding:16px;">No candidates submitted yet.</p>'; return; }
+    let html = '';
+    POSITIONS.forEach(pos => {
+      const pc = list.filter(c=>c.position===pos);
+      if (!pc.length) return;
+      html += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--g);margin-bottom:8px;">${pos}</div>`;
+      pc.forEach(cand => {
+        const photoHTML = cand.photoURL
+          ? `<img class="cmgmt-photo" src="${cand.photoURL}" onclick="LB.open('${cand.photoURL}','${cand.name}','${pos}')" alt="${cand.name}"/>`
+          : `<div class="cmgmt-photo" style="display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>`;
+        html += `<div class="cmgmt">
+          ${photoHTML}
+          <div class="cmgmt-info"><div class="cmgmt-name">${cand.name}</div><div class="cmgmt-pos">${cand.regNumber}</div></div>
+          <button class="del-btn" onclick="Admin.delCand('${cand.id}','${cand.name}')">✕</button>
+        </div>`;
+      });
+      html += '</div>';
+    });
+    c.innerHTML = html;
+  },
+
+  renderTrack(list) {
+    const c = document.getElementById('track-list');
+    if (!list.length) { c.innerHTML='<p style="text-align:center;color:var(--muted);padding:16px;">No votes recorded yet.</p>'; return; }
+    c.innerHTML = list.map(v => {
+      const sels = v.selections||{};
+      const selText = Object.entries(sels).map(([pos,cid])=>{
+        const cand = allCandidates.find(c=>c.id===cid);
+        return `<div style="font-size:11px;color:var(--muted);font-weight:700;padding:3px 0;"><span style="color:var(--g);">${pos}:</span> ${cand?.name||cid}</div>`;
+      }).join('');
+      return `<div class="track-row" id="tr-${v.id}">
+        <div class="track-name">${v.voterName||'—'} <span class="bdg ${v.voterLevel==='200L'?'b200':'b300'}">${v.voterLevel||''}</span></div>
+        ${selText}
+      </div>`;
+    }).join('');
+  },
+
+  filterTrack(q) {
+    const filtered = allVotes.filter(v=>(v.voterName||'').toLowerCase().includes(q.toLowerCase()));
+    this.renderTrack(filtered);
+  },
+
+  unlockTrack() {
+    const pw = document.getElementById('super-pw').value;
+    if (pw!==ADMIN_PW) { document.getElementById('super-err').style.display='block'; return; }
+    document.getElementById('super-err').style.display='none';
+    document.getElementById('super-pw').value='';
+    document.getElementById('track-lock-screen').style.display='none';
+    document.getElementById('track-content').style.display='block';
+    this.renderTrack(allVotes);
+  },
+
+  lockTrack() {
+    document.getElementById('track-lock-screen').style.display='block';
+    document.getElementById('track-content').style.display='none';
+  },
+
+  async delCand(id, name) {
+    if (!confirm(`Remove ${name}?`)) return;
+    loading('Removing...');
+    try {
+      await window.$fs.deleteDoc(window.$fs.doc(window.$db,'candidates',id));
+      done(); this.load();
+    } catch(e) { done(); alert('Error: '+e.message); }
+  },
+
+  async clearAllCands() {
+    if (!confirm('Delete ALL candidates?')) return;
+    loading('Clearing...');
+    try {
+      const {collection,getDocs,deleteDoc,doc} = window.$fs;
+      const snap = await getDocs(collection(window.$db,'candidates'));
+      for (const d of snap.docs) await deleteDoc(doc(window.$db,'candidates',d.id));
+      done(); this.load();
+    } catch(e) { done(); alert('Error: '+e.message); }
+  },
+
+  async clearVotes() {
+    if (!confirm('⚠️ Clear ALL votes and results?')) return;
+    if (!confirm('Are you sure? This cannot be undone!')) return;
+    loading('Clearing votes...');
+    try {
+      const {collection,getDocs,deleteDoc,doc,updateDoc} = window.$fs;
+      const db = window.$db;
+      const [vSnap,rSnap,voSnap] = await Promise.all([
+        getDocs(collection(db,'votes')),
+        getDocs(collection(db,'results')),
+        getDocs(collection(db,'registeredVoters'))
+      ]);
+      for (const d of vSnap.docs) await deleteDoc(doc(db,'votes',d.id));
+      for (const d of rSnap.docs) await deleteDoc(doc(db,'results',d.id));
+      for (const d of voSnap.docs) {
+        if (d.data().voted) await updateDoc(doc(db,'registeredVoters',d.id),{voted:false,votedAt:null});
+      }
+      done(); alert('✅ All votes cleared!'); this.load();
+    } catch(e) { done(); alert('Error: '+e.message); }
+  },
+
+  exportCSV() {
+    if (!allVoters.length) { alert('No voters!'); return; }
+    const csv = ['Full Name,Email,Reg Number,Level,Voted',
+      ...allVoters.map(v=>`"${v.name||''}","${v.email||''}","${v.regNumber||''}","${v.level||''}","${v.voted?'Yes':'No'}"`)
+    ].join('\n');
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+    a.download='FOSSAN_Voters.csv'; a.click();
+  },
+
+  printPos(pos) {
+    const key = pos.replace(/\s/g,'_');
+    const posRes = resultsMap[key]||{};
+    const posCands = allCandidates.filter(c=>c.position===pos);
+    const sorted = [...posCands].map(c=>{
+      const d=posRes[c.id]||{total:0,votes200L:0,votes300L:0};
+      return {...c,total:d.total||0,v200:d.votes200L||0,v300:d.votes300L||0};
+    }).sort((a,b)=>b.total-a.total);
+    let html=`<html><head><title>${pos}</title><style>
+      body{font-family:Arial,sans-serif;padding:24px;background:#fff;color:#000;}
+      h1{font-size:22px;margin-bottom:4px;}.pos{font-size:16px;background:#e11d48;color:#fff;padding:8px 14px;border-radius:8px;margin-bottom:20px;}
+      .cands{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+      .cand{border:2px solid #ddd;border-radius:10px;padding:14px;width:150px;text-align:center;}
+      .cand.win{border-color:#FFD600;background:#fffde7;}
+      .cand img{width:110px;height:146px;object-fit:cover;border-radius:7px;margin-bottom:8px;}
+      .n{font-weight:900;font-size:13px;margin-bottom:4px;}.v{font-size:22px;font-weight:900;color:#e11d48;}
+      .l{font-size:11px;color:#666;}.foot{margin-top:24px;font-size:11px;color:#999;text-align:center;}
+    </style></head><body>
+    <h1>FOSSAN ELECTION 2026</h1>
+    <div class="pos">${pos.toUpperCase()}</div>
+    <div class="cands">`;
+    sorted.forEach((c,i)=>{
+      html+=`<div class="cand${i===0&&c.total>0?' win':''}">
+        ${c.photoURL?`<img src="${c.photoURL}"/>`:'<div style="width:110px;height:146px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;font-size:36px;border-radius:7px;margin:0 auto 8px;">👤</div>'}
+        <div class="n">${i===0&&c.total>0?'👑 ':''}${c.name}</div>
+        <div class="v">${c.total} votes</div>
+        <div class="l">200L: ${c.v200} | 300L: ${c.v300}</div>
+      </div>`;
+    });
+    html+=`</div><div class="foot">FOSSAN Election 2026 — ${new Date().toLocaleString('en-NG')}</div></body></html>`;
+    const w=window.open('','_blank'); w.document.write(html); w.document.close(); setTimeout(()=>w.print(),500);
+  },
+
+  exportPDF() {
+    const voted = allVoters.filter(v=>v.voted).length;
+    const total = allVoters.length;
+    let html=`<html><head><title>FOSSAN Results</title><style>
+      body{font-family:Arial,sans-serif;padding:20px;background:#fff;color:#000;}
+      .hdr{text-align:center;border-bottom:3px solid #e11d48;padding-bottom:14px;margin-bottom:18px;}
+      h1{font-size:24px;margin-bottom:4px;}.stats{display:flex;gap:16px;justify-content:center;margin-bottom:18px;}
+      .stat{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px 20px;text-align:center;}
+      .stat .n{font-size:28px;font-weight:900;color:#e11d48;}.stat .l{font-size:11px;color:#666;}
+      .pos{margin-bottom:18px;page-break-inside:avoid;}
+      .pt{background:#e11d48;color:#fff;padding:7px 12px;border-radius:7px;font-size:13px;font-weight:900;margin-bottom:8px;}
+      .crow{display:flex;align-items:center;gap:10px;padding:8px;background:#f9fafb;border-radius:8px;margin-bottom:5px;}
+      .crow.win{background:#fffde7;border:1.5px solid #FFD600;}
+      .crow img{width:36px;height:48px;object-fit:cover;border-radius:5px;}
+      .cname{font-weight:900;font-size:13px;flex:1;}.cvotes{font-size:18px;font-weight:900;color:#e11d48;}
+      .clvl{font-size:11px;color:#666;}
+      .foot{text-align:center;margin-top:24px;padding-top:14px;border-top:1px solid #eee;font-size:11px;color:#999;}
+    </style></head><body>
+    <div class="hdr"><h1>🗳️ FOSSAN ELECTION 2026</h1><p style="color:#666;font-size:13px;">Official Results — ${new Date().toLocaleString('en-NG')}</p></div>
+    <div class="stats">
+      <div class="stat"><div class="n">${total}</div><div class="l">Registered</div></div>
+      <div class="stat"><div class="n">${voted}</div><div class="l">Voted</div></div>
+      <div class="stat"><div class="n">${total>0?Math.round((voted/total)*100):0}%</div><div class="l">Turnout</div></div>
+    </div>`;
+    POSITIONS.forEach(pos=>{
+      const key=pos.replace(/\s/g,'_');
+      const posRes=resultsMap[key]||{};
+      const posCands=allCandidates.filter(c=>c.position===pos);
+      if(!posCands.length)return;
+      const sorted=[...posCands].map(c=>{const d=posRes[c.id]||{total:0,votes200L:0,votes300L:0};return{...c,total:d.total||0,v200:d.votes200L||0,v300:d.votes300L||0};}).sort((a,b)=>b.total-a.total);
+      html+=`<div class="pos"><div class="pt">${pos.toUpperCase()}</div>`;
+      sorted.forEach((c,i)=>{
+        html+=`<div class="crow${i===0&&c.total>0?' win':''}">
+          ${c.photoURL?`<img src="${c.photoURL}"/>`:'<div style="width:36px;height:48px;background:#f0f0f0;display:flex;align-items:center;justify-content:center;border-radius:5px;">👤</div>'}
+          <div class="cname">${i===0&&c.total>0?'👑 ':''}${c.name}</div>
+          <div><div class="cvotes">${c.total} votes</div><div class="clvl">200L:${c.v200} 300L:${c.v300}</div></div>
+        </div>`;
+      });
+      html+='</div>';
+    });
+    html+=`<div class="foot">FOSSAN Election 2026 — Electoral Committee — Confidential</div></body></html>`;
+    const w=window.open('','_blank'); w.document.write(html); w.document.close(); setTimeout(()=>w.print(),500);
+  }
+};
+</script>
+</body>
+</html>
