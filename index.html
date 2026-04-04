@@ -676,14 +676,11 @@ window.Cand = {
       if (exists.exists()) { done(); showErr('c-err','⚠ Already submitted for this position!'); return; }
       // Step 1: Compress at high quality
       loading('Optimising photo...');
-      const compressed = await compressPhoto(photoB64, 800, 0.88);
-      // Step 2: Upload to Firebase Storage (fast + reliable on poor network)
-      loading('Uploading photo... please wait ⏳');
-      const {ref, uploadString, getDownloadURL} = window.$sr;
-      const photoRef = ref(window.$st, `candidates/${id}.jpg`);
-      await uploadString(photoRef, compressed, 'data_url');
-      const photoURL = await getDownloadURL(photoRef);
-      // Step 3: Save only short URL to Firestore (tiny + fast)
+      const compressed = await compressPhoto(photoB64, 900, 0.92);
+      // Step 2: Upload to Cloudinary (free, fast, high quality)
+      loading('Uploading photo... ⏳');
+      const photoURL = await uploadToCloudinary(compressed);
+      // Step 3: Save short URL to Firestore
       loading('Saving details...');
       await setDoc(doc(db,'candidates',id), {name, regNumber:reg, position:pos, photoURL, submittedAt:serverTimestamp()});
       done();
@@ -698,7 +695,7 @@ window.Cand = {
   }
 };
 
-// High quality photo compression - uploads to Storage so no size panic needed
+// High quality photo compression
 function compressPhoto(base64, maxWidth, quality) {
   return new Promise(resolve => {
     const img = new Image();
@@ -713,6 +710,23 @@ function compressPhoto(base64, maxWidth, quality) {
     img.onerror = () => resolve(base64);
     img.src = base64;
   });
+}
+
+// Upload photo to Cloudinary - free, fast, high quality (unsigned preset)
+async function uploadToCloudinary(base64) {
+  const CLOUD_NAME = 'dj0euvezb';
+  const UPLOAD_PRESET = 'fossan_upload';
+  const formData = new FormData();
+  formData.append('file', base64);
+  formData.append('upload_preset', UPLOAD_PRESET);
+  formData.append('folder', 'fossan_candidates');
+  const res = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, {
+    method: 'POST',
+    body: formData
+  });
+  const data = await res.json();
+  if (!data.secure_url) throw new Error('Cloudinary upload failed: ' + (data.error?.message||'unknown'));
+  return data.secure_url;
 }
 
 // ══════════════════════════════════════════
@@ -928,14 +942,20 @@ window.Admin = {
     try {
       const {collection, getDocs} = window.$fs;
       const db = window.$db;
-      const [vSnap, cSnap, vtSnap, rSnap] = await Promise.all([
+      // Load voters and results first (lightweight - no photos)
+      const [vSnap, vtSnap, rSnap] = await Promise.all([
         getDocs(collection(db,'registeredVoters')),
-        getDocs(collection(db,'candidates')),
         getDocs(collection(db,'votes')),
         getDocs(collection(db,'results'))
       ]);
+      // Load candidates separately
+      const cSnap = await getDocs(collection(db,'candidates'));
       allVoters=[]; vSnap.forEach(d=>allVoters.push({id:d.id,...d.data()}));
-      allCandidates=[]; cSnap.forEach(d=>allCandidates.push({id:d.id,...d.data()}));
+      // Load candidates WITHOUT photoURL first for fast dashboard load
+      allCandidates=[]; cSnap.forEach(d=>{
+        const data=d.data();
+        allCandidates.push({id:d.id, name:data.name, regNumber:data.regNumber, position:data.position, submittedAt:data.submittedAt, photoURL:data.photoURL});
+      });
       allVotes=[]; vtSnap.forEach(d=>allVotes.push({id:d.id,...d.data()}));
       resultsMap={}; rSnap.forEach(d=>resultsMap[d.id]=d.data());
       const voted = allVoters.filter(v=>v.voted).length;
@@ -1006,8 +1026,8 @@ window.Admin = {
         const pct = max>0?(c.total/max)*100:0;
         const isWin = i===0&&c.total>0;
         const photoHTML = c.photoURL
-          ? `<img class="rcand-photo" src="${c.photoURL}" alt="${c.name}" onclick="LB.open('${c.photoURL}','${c.name}','${pos}')" title="View full size"/>`
-          : `<div class="rcand-photo" style="display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>`;
+          ? `<img class="rcand-photo" loading="lazy" src="${c.photoURL}" alt="${c.name}" onclick="LB.open('${c.photoURL}','${c.name}','${pos}')" title="View full size"/>`
+          : `<div class="rcand-photo" loading="lazy" style="display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>`;
         html += `<div class="rcand${isWin?' win':''}">
           <div class="rcand-top">
             ${photoHTML}
@@ -1053,8 +1073,8 @@ window.Admin = {
       html += `<div style="margin-bottom:14px;"><div style="font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:2px;color:var(--g);margin-bottom:8px;">${pos}</div>`;
       pc.forEach(cand => {
         const photoHTML = cand.photoURL
-          ? `<img class="cmgmt-photo" src="${cand.photoURL}" onclick="LB.open('${cand.photoURL}','${cand.name}','${pos}')" alt="${cand.name}"/>`
-          : `<div class="cmgmt-photo" style="display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>`;
+          ? `<img class="cmgmt-photo" loading="lazy" src="${cand.photoURL}" onclick="LB.open('${cand.photoURL}','${cand.name}','${pos}')" alt="${cand.name}"/>`
+          : `<div class="cmgmt-photo" loading="lazy" style="display:flex;align-items:center;justify-content:center;font-size:22px;">👤</div>`;
         html += `<div class="cmgmt">
           ${photoHTML}
           <div class="cmgmt-info"><div class="cmgmt-name">${cand.name}</div><div class="cmgmt-pos">${cand.regNumber}</div></div>
