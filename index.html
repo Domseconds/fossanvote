@@ -674,9 +674,18 @@ window.Cand = {
       const id = reg.replace(/\//g,'-') + '_' + pos.replace(/\s/g,'_');
       const exists = await getDoc(doc(db,'candidates',id));
       if (exists.exists()) { done(); showErr('c-err','⚠ Already submitted for this position!'); return; }
-      // Compress photo aggressively - must be under 500KB for Firestore
-      const compressed = await compressPhoto(photoB64, 800, 0.78);
-      await setDoc(doc(db,'candidates',id), {name, regNumber:reg, position:pos, photoURL:compressed, submittedAt:serverTimestamp()});
+      // Step 1: Compress at high quality
+      loading('Optimising photo...');
+      const compressed = await compressPhoto(photoB64, 800, 0.88);
+      // Step 2: Upload to Firebase Storage (fast + reliable on poor network)
+      loading('Uploading photo... please wait ⏳');
+      const {ref, uploadString, getDownloadURL} = window.$sr;
+      const photoRef = ref(window.$st, `candidates/${id}.jpg`);
+      await uploadString(photoRef, compressed, 'data_url');
+      const photoURL = await getDownloadURL(photoRef);
+      // Step 3: Save only short URL to Firestore (tiny + fast)
+      loading('Saving details...');
+      await setDoc(doc(db,'candidates',id), {name, regNumber:reg, position:pos, photoURL, submittedAt:serverTimestamp()});
       done();
       showOk('c-ok','✅ Candidacy submitted successfully!');
       document.getElementById('c-name').value = '';
@@ -689,28 +698,17 @@ window.Cand = {
   }
 };
 
-// Compress photo before saving - keeps it small and fast
+// High quality photo compression - uploads to Storage so no size panic needed
 function compressPhoto(base64, maxWidth, quality) {
   return new Promise(resolve => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
       let w = img.width, h = img.height;
-      // Scale down
       if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      let result = canvas.toDataURL('image/jpeg', quality);
-      // Keep under 800KB for fast submission under 10 seconds
-      if (result.length > 800000) {
-        result = canvas.toDataURL('image/jpeg', 0.65);
-      }
-      if (result.length > 800000) {
-        canvas.width = 600; canvas.height = Math.round(h * 600 / w);
-        canvas.getContext('2d').drawImage(img, 0, 0, 600, Math.round(h * 600 / w));
-        result = canvas.toDataURL('image/jpeg', 0.65);
-      }
-      resolve(result);
+      resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.onerror = () => resolve(base64);
     img.src = base64;
